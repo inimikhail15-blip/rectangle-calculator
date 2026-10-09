@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tugas 1 — Persegi Panjang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ══════════════════════════════════════════════
+         RESET
+         ══════════════════════════════════════════════ */
+      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+      :root {
+        --bg: #0c0c10;
+        --surface: #161619;
+        --surface-2: #1e1e23;
+        --border: rgba(255,255,255,0.06);
+        --border-hover: rgba(255,255,255,0.12);
+        --text: #ececf0;
+        --text-dim: #7a7a85;
+        --text-muted: #4a4a54;
+        --accent: #c8ff64;
+        --accent-dim: rgba(200,255,100,0.08);
+        --accent-glow: rgba(200,255,100,0.15);
+        --blue: #64b5ff;
+        --pink: #ff6eb4;
+        --mono: 'Space Mono', monospace;
+        --sans: 'DM Sans', system-ui, sans-serif;
+        --radius: 14px;
+      }
+
+      html { font-size: 16px; }
+
+      body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* ══════════════════════════════════════════════
+         BACKGROUND — subtle noise + grid
+         ══════════════════════════════════════════════ */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(circle at 15% 20%, rgba(200,255,100,0.04) 0%, transparent 50%),
+          radial-gradient(circle at 85% 80%, rgba(100,180,255,0.03) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .grid-bg {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+        background-size: 60px 60px;
+        mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 20%, transparent 100%);
+        -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 20%, transparent 100%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ══════════════════════════════════════════════
+         MAIN WRAPPER
+         ══════════════════════════════════════════════ */
+      .wrapper {
+        position: relative;
+        z-index: 1;
+        width: 520px;
+        max-width: 94vw;
+      }
+
+      /* ══════════════════════════════════════════════
+         HEADER AREA
+         ══════════════════════════════════════════════ */
+      .header {
+        margin-bottom: 32px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        background: var(--accent-dim);
+        border: 1px solid rgba(200,255,100,0.12);
+        border-radius: 100px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 16px;
+      }
+
+      .badge::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: pulse-dot 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.7); }
+      }
+
+      .header h1 {
+        font-size: 1.85rem;
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: -0.03em;
+        color: var(--text);
+      }
+
+      .header h1 span {
+        color: var(--text-muted);
+        font-weight: 400;
+      }
+
+      /* ══════════════════════════════════════════════
+         CARD / PANEL
+         ══════════════════════════════════════════════ */
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 32px;
+        transition: border-color 0.4s;
+      }
+
+      .panel:hover {
+        border-color: var(--border-hover);
+      }
+
+      /* ══════════════════════════════════════════════
+         INPUT ROW
+         ══════════════════════════════════════════════ */
+      .input-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .input-block {
+        flex: 1;
+        position: relative;
+      }
+
+      .input-block label {
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 8px;
+      }
+
+      .input-block input {
+        width: 100%;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-family: var(--mono);
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.25s, box-shadow 0.25s;
+        -moz-appearance: textfield;
+        appearance: textfield;
+      }
+
+      .input-block input::-webkit-outer-spin-button,
+      .input-block input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .input-block input::placeholder {
+        color: var(--text-muted);
+        font-weight: 400;
+      }
+
+      .input-block input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-dim);
+      }
+
+      .input-unit {
+        position: absolute;
+        right: 14px;
+        bottom: 15px;
+        font-size: 0.72rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        pointer-events: none;
+      }
+
+      /* ══════════════════════════════════════════════
+         BUTTON
+         ══════════════════════════════════════════════ */
+      .btn-row {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 14px;
+        border: none;
+        border-radius: 12px;
+        font-family: var(--sans);
+        font-size: 0.88rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: var(--accent);
+        color: #0c0c10;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
+        transform: translateX(-100%);
+        transition: transform 0.6s;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 24px var(--accent-glow);
+      }
+
+      .btn:hover::after {
+        transform: translateX(100%);
+      }
+
+      .btn-reset {
+        flex: 0 0 auto;
+        padding: 14px 22px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        font-family: var(--sans);
+        font-size: 0.88rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: transparent;
+        color: var(--text-dim);
+      }
+
+      .btn-reset:hover {
+        border-color: var(--border-hover);
+        color: var(--text);
+        background: rgba(255,255,255,0.03);
+      }
+
+      .btn:active,
+      .btn-reset:active {
+        transform: translateY(0) scale(0.985);
+      }
+
+      /* ══════════════════════════════════════════════
+         DIVIDER
+         ══════════════════════════════════════════════ */
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 28px 0;
+        position: relative;
+      }
+
+      .divider-label {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--surface);
+        padding: 0 14px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      /* ══════════════════════════════════════════════
+         RESULTS
+         ══════════════════════════════════════════════ */
+      .results-area {
+        display: none;
+      }
+
+      .results-area.visible {
+        display: block;
+        animation: resultIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      @keyframes resultIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .result-main {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .result-tile {
+        flex: 1;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px 16px 16px;
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.3s, transform 0.2s;
+      }
+
+      .result-tile:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-2px);
+      }
+
+      .result-tile .r-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-dim);
+        margin-bottom: 10px;
+      }
+
+      .result-tile .r-value {
+        font-family: var(--mono);
+        font-size: 1.7rem;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .result-tile .r-unit {
+        font-family: var(--sans);
+        font-size: 0.65rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        margin-top: 6px;
+      }
+
+      /* Accent stripe on tiles */
+      .result-tile::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+      }
+
+      .result-tile.tile-luas::before { background: var(--accent); }
+      .result-tile.tile-luas .r-value { color: var(--accent); }
+
+      .result-tile.tile-keliling::before { background: var(--blue); }
+      .result-tile.tile-keliling .r-value { color: var(--blue); }
+
+      /* Detail row */
+      .result-detail {
+        display: flex;
+        gap: 0;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .detail-item {
+        flex: 1;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .detail-item + .detail-item {
+        border-left: 1px solid var(--border);
+      }
+
+      .detail-item .d-label {
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        font-weight: 500;
+      }
+
+      .detail-item .d-value {
+        font-family: var(--mono);
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      /* Formula display */
+      .formula-row {
+        margin-top: 16px;
+        display: flex;
+        gap: 8px;
+      }
+
+      .formula-tag {
+        flex: 1;
+        background: rgba(255,255,255,0.02);
+        border: 1px dashed rgba(255,255,255,0.06);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-family: var(--mono);
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        text-align: center;
+        line-height: 1.5;
+      }
+
+      .formula-tag strong {
+        color: var(--text-dim);
+        font-weight: 700;
+      }
+
+      /* ══════════════════════════════════════════════
+         SHAPE VIS
+         ══════════════════════════════════════════════ */
+      .shape-vis {
+        margin-top: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .shape-container {
+        position: relative;
+      }
+
+      .shape-box {
+        border: 1.5px solid rgba(200,255,100,0.25);
+        border-radius: 4px;
+        background: rgba(200,255,100,0.03);
+        transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                    height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      /* Corner dots */
+      .shape-box::before,
+      .shape-box::after {
+        content: '';
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      .shape-box::before { top: -3px; left: -3px; }
+      .shape-box::after { top: -3px; right: -3px; }
+
+      .corner-bl, .corner-br {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      .corner-bl { bottom: -3px; left: -3px; }
+      .corner-br { bottom: -3px; right: -3px; }
+
+      .shape-label-w {
+        position: absolute;
+        bottom: -22px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--accent);
+        white-space: nowrap;
+        opacity: 0.7;
+      }
+
+      .shape-label-h {
+        position: absolute;
+        right: -36px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-family: var(--mono);
+        font-size: 0.65rem;
+        color: var(--accent);
+        white-space: nowrap;
+        opacity: 0.7;
+      }
+
+      /* ══════════════════════════════════════════════
+         FOOTER
+         ══════════════════════════════════════════════ */
+      .footer {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        font-weight: 400;
+        letter-spacing: 0.02em;
+      }
+
+      .footer a {
+        color: var(--text-dim);
+        text-decoration: none;
+        border-bottom: 1px solid var(--border);
+        transition: color 0.2s;
+      }
+
+      .footer a:hover { color: var(--accent); }
+
+      /* ══════════════════════════════════════════════
+         RESPONSIVE
+         ══════════════════════════════════════════════ */
+      @media (max-width: 540px) {
+        .wrapper { max-width: 96vw; }
+        .panel { padding: 24px 20px; }
+        .input-row { flex-direction: column; gap: 14px; }
+        .result-main { flex-direction: column; }
+        .formula-row { flex-direction: column; }
+        .detail-item + .detail-item { border-left: none; border-top: 1px solid var(--border); }
+        .result-detail { flex-direction: column; }
+        .header h1 { font-size: 1.5rem; }
+      }
+
+      /* ══════════════════════════════════════════════
+         ERROR SHAKE
+         ══════════════════════════════════════════════ */
+      .shake {
+        animation: shake 0.4s ease-in-out;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-6px); }
+        40% { transform: translateX(6px); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(4px); }
+      }
+
+      .input-block input.error {
+        border-color: #ff4466 !important;
+        box-shadow: 0 0 0 3px rgba(255,68,102,0.1) !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-bg"></div>
+
+    <div class="wrapper">
+      <!-- Header -->
+      <div class="header">
+        <h1>Persegi Panjang <span>Calculator</span></h1>
+      </div>
+
+      <!-- Main Panel -->
+      <div class="panel" id="mainPanel">
+        <!-- Input -->
+        <div class="input-row">
+          <div class="input-block">
+            <label for="inputPanjang">Panjang</label>
+            <input type="number" id="inputPanjang" placeholder="0" min="0" step="any" />
+            <span class="input-unit">m</span>
+          </div>
+          <div class="input-block">
+            <label for="inputLebar">Lebar</label>
+            <input type="number" id="inputLebar" placeholder="0" min="0" step="any" />
+            <span class="input-unit">m</span>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn" id="btnHitung" onclick="hitung()">
+            Hitung
+          </button>
+          <button class="btn-reset" id="btnReset" onclick="resetForm()">
+            Reset
+          </button>
+        </div>
+
+        <!-- Results -->
+        <div class="results-area" id="resultsArea">
+          <div class="divider">
+            <span class="divider-label">Hasil</span>
+          </div>
+
+          <!-- Main results: Luas & Keliling -->
+          <div class="result-main">
+            <div class="result-tile tile-luas">
+              <div class="r-label">Luas</div>
+              <div class="r-value" id="luas">—</div>
+              <div class="r-unit">meter persegi (m²)</div>
+            </div>
+            <div class="result-tile tile-keliling">
+              <div class="r-label">Keliling</div>
+              <div class="r-value" id="keliling">—</div>
+              <div class="r-unit">meter (m)</div>
+            </div>
+          </div>
+
+          <!-- Detail row: Panjang & Lebar echo -->
+          <div class="result-detail">
+            <div class="detail-item">
+              <span class="d-label">Panjang</span>
+              <span class="d-value" id="panjang">—</span>
+            </div>
+            <div class="detail-item">
+              <span class="d-label">Lebar</span>
+              <span class="d-value" id="lebar">—</span>
+            </div>
+          </div>
+
+          <!-- Formulas -->
+          <div class="formula-row">
+            <div class="formula-tag">
+              <strong>L</strong> = p × l = <span id="fLuas"></span>
+            </div>
+            <div class="formula-tag">
+              <strong>K</strong> = 2(p + l) = <span id="fKeliling"></span>
+            </div>
+          </div>
+
+          <!-- Shape visualization -->
+          <div class="shape-vis" id="shapeVis">
+            <div class="shape-container">
+              <div class="shape-box" id="shapeBox">
+                <div class="corner-bl"></div>
+                <div class="corner-br"></div>
+              </div>
+              <span class="shape-label-w" id="labelW"></span>
+              <span class="shape-label-h" id="labelH"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        made by mikhail with javascript
+      </div>
+    </div>
+
+    <script>
+      /*
+            ==Task 1==
+            Buat variable panjang dan lebar dengan tipe data number
+            (Sekarang diambil dari input user)
+        */
+
+      function hitung() {
+        const inputP = document.getElementById("inputPanjang");
+        const inputL = document.getElementById("inputLebar");
+
+        let panjang = parseFloat(inputP.value);
+        // variable panjang diambil dari input
+        let lebar = parseFloat(inputL.value);
+        // variable lebar diambil dari input
+
+        // Reset error state
+        inputP.classList.remove("error");
+        inputL.classList.remove("error");
+
+        // Validasi
+        let hasError = false;
+        if (isNaN(panjang) || panjang <= 0) {
+          inputP.classList.add("error");
+          hasError = true;
+        }
+        if (isNaN(lebar) || lebar <= 0) {
+          inputL.classList.add("error");
+          hasError = true;
+        }
+        if (hasError) {
+          document.getElementById("mainPanel").classList.add("shake");
+          setTimeout(() => {
+            document.getElementById("mainPanel").classList.remove("shake");
+          }, 400);
+          return;
+        }
+
+        /*
+              ==Task 2==
+              Buat variable luas yang berisi hasil perkalian panjang dan lebar
+          */
+        let luas = panjang * lebar;
+        // variable luas = panjang x lebar
+
+        /*
+              ==Task 3==
+              Buat variable keliling yang berisi hasil 2 * (panjang + lebar)
+          */
+        let keliling = 2 * (panjang + lebar);
+        // variable keliling = 2 x (panjang + lebar)
+
+        // Tampilkan hasil
+        document.getElementById("panjang").textContent = panjang + " m";
+        document.getElementById("lebar").textContent = lebar + " m";
+        document.getElementById("luas").textContent = luas;
+        document.getElementById("keliling").textContent = keliling;
+
+        // Formula display
+        document.getElementById("fLuas").textContent =
+          panjang + " × " + lebar + " = " + luas;
+        document.getElementById("fKeliling").textContent =
+          "2(" + panjang + " + " + lebar + ") = " + keliling;
+
+        // Show results
+        const area = document.getElementById("resultsArea");
+        area.classList.remove("visible");
+        // Force reflow for re-animation
+        void area.offsetWidth;
+        area.classList.add("visible");
+
+        // Shape visualization
+        const box = document.getElementById("shapeBox");
+        const maxW = 180;
+        const ratio = lebar / panjang;
+        const w = Math.min(maxW, Math.max(50, panjang * 6));
+        const h = Math.max(24, Math.min(w * ratio, 90));
+
+        box.style.width = w + "px";
+        box.style.height = h + "px";
+        document.getElementById("labelW").textContent = panjang + "m";
+        document.getElementById("labelH").textContent = lebar + "m";
+      }
+
+      function resetForm() {
+        document.getElementById("inputPanjang").value = "";
+        document.getElementById("inputLebar").value = "";
+        document.getElementById("inputPanjang").classList.remove("error");
+        document.getElementById("inputLebar").classList.remove("error");
+        document.getElementById("resultsArea").classList.remove("visible");
+        document.getElementById("inputPanjang").focus();
+      }
+
+      // Enter key support
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") hitung();
+      });
+
+      // Clear error on input
+      document.querySelectorAll("input").forEach(function (el) {
+        el.addEventListener("input", function () {
+          this.classList.remove("error");
+        });
+      });
+    </script>
+  </body>
+</html>
